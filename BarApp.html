@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="robots" content="noindex, nofollow">
+  <title>DY Calc</title>
+  <style>
+    :root {
+      --bg-color: rgb(0, 20, 27);
+      --fg-color: rgb(227, 254, 247);
+      --change-color: rgb(255, 0, 0);
+      --cat1-color: rgb(119, 170, 176);
+      --cat2-color: rgb(176, 170, 119);
+      --cat3-color: rgb(170, 119, 176);
+    }
+    html,body {
+      margin: 0;
+      padding: 0;
+      touch-action: none;
+      caret-color: currentcolor;
+    }
+    body {
+      box-sizing: border-box;
+      height: 100vh;
+      height: 100svh;
+      width: 100vw;
+      width: 100svw;
+      padding: 1.0em 0.6em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Roboto', '-apple-system', 'BlinkMacSystemFont', sans-serif;
+      font-feature-settings: 'tnum';
+      font-size: 4vmin;
+      font-size: 4svmin;
+      background-color: var(--bg-color);
+      color: var(--fg-color);
+    }
+    button {
+      font-size: inherit;
+      color: inherit;
+      background-color: inherit;
+    }
+    #calculator {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: 0.5fr repeat(6, 1fr);
+      gap: 0.3em;     
+      min-width: 100%;
+      min-height: 100%;
+    }
+    #calculator > .result {
+      grid-column: span 2;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      justify-content: right;
+      align-items: center;
+    }
+    #calculator.is-change .result #total {
+      color: var(--change-color);
+    }  
+    #calculator.is-change-missing .result {
+      background-color: var(--change-color);
+    }
+    #calculator > .result #cash {
+      border: none;
+      outline: none;
+      font-size: 2em;
+      width: 100%;
+      overflow: hidden;
+    }
+    #calculator > .result #cash:empty::before {
+      display: block;
+      content: '';
+      width: 1em;
+      height: 1em;
+      --fa-coins: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"%3E%3C!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --%3E%3Cpath d="M512 80c0 18-14.3 34.6-38.4 48c-29.1 16.1-72.5 27.5-122.3 30.9c-3.7-1.8-7.4-3.5-11.3-5C300.6 137.4 248.2 128 192 128c-8.3 0-16.4 .2-24.5 .6l-1.1-.6C142.3 114.6 128 98 128 80c0-44.2 86-80 192-80S512 35.8 512 80zM160.7 161.1c10.2-.7 20.7-1.1 31.3-1.1c62.2 0 117.4 12.3 152.5 31.4C369.3 204.9 384 221.7 384 240c0 4-.7 7.9-2.1 11.7c-4.6 13.2-17 25.3-35 35.5c0 0 0 0 0 0c-.1 .1-.3 .1-.4 .2l0 0 0 0c-.3 .2-.6 .3-.9 .5c-35 19.4-90.8 32-153.6 32c-59.6 0-112.9-11.3-148.2-29.1c-1.9-.9-3.7-1.9-5.5-2.9C14.3 274.6 0 258 0 240c0-34.8 53.4-64.5 128-75.4c10.5-1.5 21.4-2.7 32.7-3.5zM416 240c0-21.9-10.6-39.9-24.1-53.4c28.3-4.4 54.2-11.4 76.2-20.5c16.3-6.8 31.5-15.2 43.9-25.5V176c0 19.3-16.5 37.1-43.8 50.9c-14.6 7.4-32.4 13.7-52.4 18.5c.1-1.8 .2-3.5 .2-5.3zm-32 96c0 18-14.3 34.6-38.4 48c-1.8 1-3.6 1.9-5.5 2.9C304.9 404.7 251.6 416 192 416c-62.8 0-118.6-12.6-153.6-32C14.3 370.6 0 354 0 336V300.6c12.5 10.3 27.6 18.7 43.9 25.5C83.4 342.6 135.8 352 192 352s108.6-9.4 148.1-25.9c7.8-3.2 15.3-6.9 22.4-10.9c6.1-3.4 11.8-7.2 17.2-11.2c1.5-1.1 2.9-2.3 4.3-3.4V304v5.7V336zm32 0V304 278.1c19-4.2 36.5-9.5 52.1-16c16.3-6.8 31.5-15.2 43.9-25.5V272c0 10.5-5 21-14.9 30.9c-16.3 16.3-45 29.7-81.3 38.4c.1-1.7 .2-3.5 .2-5.3zM192 448c56.2 0 108.6-9.4 148.1-25.9c16.3-6.8 31.5-15.2 43.9-25.5V432c0 44.2-86 80-192 80S0 476.2 0 432V396.6c12.5 10.3 27.6 18.7 43.9 25.5C83.4 438.6 135.8 448 192 448z"/%3E%3C/svg%3E');
+      -webkit-mask: var(--fa-coins);
+      -webkit-mask-size: cover;
+      mask: var(--fa-coins);
+      mask-size: cover;
+      background-color: var(--fg-color);
+      opacity: 0.3;
+    }
+    #calculator > .result #total {
+      font-size: 2em;
+    }
+    #calculator > .result #total::after {
+      content: "\2007";
+    }
+    .option, .pfand, .clear {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      border-radius: 25px;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      border-width: 0.15em;
+      border-style: solid;
+      border-color: inherit;
+      color: var(--cat-color, inherit);
+    }
+    .option.is-active, .pfand.is-active {
+      opacity: 0.75;
+    }
+    .clear {
+      padding: 0.8em;
+    }
+    .option.cat1 {
+      --cat-color: var(--cat1-color);
+    }
+    .option.cat2 {
+      --cat-color: var(--cat2-color);
+    }
+    .option.cat3 {
+      --cat-color: var(--cat3-color);
+    }
+    .option::before, .pfand::before {
+      content: '\2007\00a0';
+      font-weight: bold;
+    }
+    .option[data-count]:not([data-count='']):not([data-count='0']) {
+      background-color: var(--cat-color);
+      border-color: var(--cat-color);
+      color: var(--fg-color);
+    }
+    .option[data-count]:not([data-count='']):not([data-count='0'])::before,
+    .pfand[data-count]:not([data-count='']):not([data-count='0'])::before {
+      content: attr(data-count) '\00a0';
+    }
+    .option:not([data-price=''])::after{
+      content: '\00a0' attr(data-price);
+    }
+    .pfand::after{
+      content: '\00a0\2007';
+      font-weight: bold;
+    }
+    .pfand{
+      background-color: var(--bg-color);
+      border-color: var(--fg-color);
+      color: var(--fg-color);
+      text-decoration: inherit;
+    }
+    .pfand[data-count]{
+      background-color: var(--fg-color);
+      border-color: var(--fg-color);
+      color: var(--bg-color);
+      text-decoration: inherit;
+    }
+  </style>
+  <script>
+    'use strict';
+
+    // ServiceWorker Registration
+    // see: http://web.archive.org/web/20231001234310/https://dev.to/saurabhdaware/make-websites-work-offline-part-1-what-are-service-workers-and-how-to-get-a-custom-app-install-button-on-the-website-4a8
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('serviceworker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const locale = document.documentElement.getAttribute('lang');
+      const isTouch = 'ontouchstart' in window;
+
+      const $calc = document.querySelector('#calculator');
+      const $cash = $calc.querySelector('#cash');
+      const $total = $calc.querySelector('#total');
+      const $clear = $calc.querySelector('#clear');
+      const $deposit_back = $calc.querySelector('#deposit_back');
+      const $options = $calc.querySelectorAll('.option');
+      var deposit = 0;
+
+      $clear.addEventListener('click', () => {
+        $cash.textContent = '';
+        for (const $option of [...$options, $deposit_back]) {
+          $option.removeAttribute('data-count');
+        }
+        deposit = 0;
+        calc();
+      });
+
+      $cash.addEventListener('input', () => calc());
+
+      for (const $option of $options) {
+        const action = (amount) => {
+          if (updateCount($option, amount)) {
+            if ($option.getAttribute('no-deposit') != '') {
+                deposit += amount;
+            }
+            calc();
+          }
+        };
+
+        addTapListener($option, () => action(1), () => action(-1));
+      }
+
+      const action = (amount) => {
+        if (updateCount($deposit_back, amount)) {
+          calc();
+        }
+      };
+
+      addTapListener($deposit_back, () => action(1), () => action(-1));
+
+      function updateCount($e, amount) {
+        const count = Number.parseInt($e.getAttribute('data-count')) || 0;
+        const updated = count + amount > 0 && count + amount < 50 ? count + amount : 0;
+        $e.setAttribute('data-count', updated);
+        return count !== updated;
+      }
+
+      function addTapListener($e, onTap, onHold) {
+        $e.addEventListener('pointerdown', (event) => {
+          let longTouch = false;
+
+          const timer = window.setInterval(() => {
+            longTouch = true;
+            onHold?.();
+          }, 500);
+
+          $e.addEventListener('pointerup', () => {
+            $e.classList.remove('is-active');
+            window.clearInterval(timer);
+            if (!longTouch) {
+              onTap?.();
+            }
+          }, { once: true });
+
+          $e.classList.add('is-active');
+          event.preventDefault();
+        });
+      }
+
+      function parseAnyFloat(value) {
+        const s = value.replace(',','.');
+        return !isNaN(s) && Number.parseFloat(s);
+      }
+
+      function calc() {
+        const cash = parseAnyFloat($cash.textContent) || 0;
+        const deposit_back = Number.parseInt($deposit_back.getAttribute('data-count')) || 0;
+
+        let total = 0;
+        let items = 0;
+        for (const $option of $options) {
+          const count = Number.parseInt($option.getAttribute('data-count')) || 0;
+          const price = parseAnyFloat($option.getAttribute('data-price'));
+          total += count * (price);
+          items += count;
+        }
+
+        total += deposit * parseAnyFloat($deposit_back.getAttribute('data-price'));
+        total -= deposit_back * parseAnyFloat($deposit_back.getAttribute('data-price'));
+
+        $calc.classList.remove('is-change');
+        $calc.classList.remove('is-change-missing');
+        $calc.classList.remove('is-deposit-changed');
+
+        if (cash > 0) {
+          total = total - cash;
+          $calc.classList.add(total <= 0 ? 'is-change' : 'is-change-missing');
+        }
+
+        $total.textContent = total.toLocaleString(locale, { style: 'currency', currency: 'EUR' });
+      }
+
+      calc();
+    });
+  </script>
+</head>
+<body>
+<div id="calculator">
+  <div class="result">
+    <div id="cash" inputmode="decimal" contenteditable="true"></div>
+    <div id="total"></div>
+    <button class="clear" id="clear">&ensp;AC&ensp;</button>
+  </div>
+  <button class="pfand" id="deposit_back" data-price="1,00"><span>Pfand zurück</span></button>
+  <button class="option cat3" data-price="3,00">Bier/Radler</button>
+  <button class="option cat3" data-price="3,00">Weinschorle</button>
+  <button class="option cat2" data-price="5,00">Longdrink</button>
+  <button class="option cat2" data-price="6,50">Vodka&VeryThinSpace;Mate</button>
+  <button class="option cat2" data-price="1,50" no-deposit="">Shot</button>
+  <button class="option cat1" data-price="2,00">Wasser/Cola</button>
+  <button class="option cat1" data-price="2,50">Softgetränk</button>
+</div>
+</body>
+</html>
